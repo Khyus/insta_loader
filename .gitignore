@@ -1,0 +1,13 @@
+library/
+
+collector/
+
+.venv/
+
+#instaloader/__pycache__/
+#instaloader/.mypy_cache/
+
+*.log
+*.mypy_cache/
+
+helper/library.log

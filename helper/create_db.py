@@ -1,19 +1,22 @@
 from sqlalchemy import Column, Integer, text, String, DateTime, ForeignKey, Table, create_engine, Boolean, JSON
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
+from sqlalchemy import Column, Integer, text, String, DateTime, ForeignKey, Table, create_engine, Boolean, JSON
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
 
 Base = declarative_base()
 
 class Media(Base):
     __tablename__ = 'media'
     id = Column(Integer, primary_key=True)
-    owner_id = Column(Integer)
-    owner = Column(String)
-    has_audio = Column(Boolean)
-    url = Column(JSON, nullable=False)
-    views = Column(Integer, nullable=False)
-    caption = Column(JSON)
-    comment_count = Column(JSON)
+    owner_id = Column(Integer)  # owner['id']
+    owner = Column(String)      # owner['username']
+    has_audio = Column(Boolean)    # only for reels
+    url = Column(JSON, nullable=False)   # depending on media type
+    views = Column(Integer, nullable=False)    # only for reels
+    caption = Column(JSON)          # edge_media_to_caption
+    comment_count = Column(JSON)    # edge_media_to_comment
     timestamp = Column(DateTime)
     likes_count = Column(Integer)
     location = Column(JSON)
