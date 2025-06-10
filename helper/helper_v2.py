@@ -14,8 +14,9 @@ loader = instaloader.Instaloader()
 
 general_session = init_db('general')
 
-def insert_media(owner_id, owner, has_audio, url, views, caption,
-                 comment_count, timestamp, likes_count, location, media_type):
+def insert_media(owner_id, owner, url, caption,
+                 comment_count, timestamp, likes_count, location, media_type,
+                 has_audio = None, views=None):
 
 
     timestamp = datetime.fromtimestamp(timestamp).isoformat()
@@ -24,14 +25,14 @@ def insert_media(owner_id, owner, has_audio, url, views, caption,
                      views = views, caption=caption, comment_count=comment_count, timestamp=timestamp, likes_count=likes_count,
                      location=location,media_type=media_type)
 
-        reels_session.add(reel)
-        reels_session.commit()
+        general_session.add(media)
+        general_session.commit()
         update_db_state(owner['username'], 'completed_reels')
         print('here...')
-        print(f"{time.ctime()}-db_size:{len(reels_session.query(Reels).all())}({owner['username']})", end='\r')
+        print(f"{time.ctime()}-db_size:{len(general_session.query(Reels).all())}({owner['username']})", end='\r')
 
     except IntegrityError:
-        reels_session.rollback()
+        general_session.rollback()
 #
 def update_db_state(user, state):
     try:
