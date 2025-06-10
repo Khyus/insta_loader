@@ -10,7 +10,7 @@ Base = declarative_base()
 class Media(Base):
     __tablename__ = 'media'
     id = Column(Integer, primary_key=True)
-    owner_id = Column(Integer)  # owner['id']
+    owner_id = Column(String)  # owner['id']
     owner = Column(String)      # owner['username']
     has_audio = Column(Boolean)    # only for reels
     url = Column(JSON, nullable=False)   # depending on media type
