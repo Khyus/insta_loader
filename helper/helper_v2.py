@@ -24,6 +24,7 @@ def insert_media(owner_id, owner, url, caption,
         media = Media(owner_id=owner_id, owner=owner, has_audio=has_audio, url=url,
                      views = views, caption=caption, comment_count=comment_count, timestamp=timestamp, likes_count=likes_count,
                      location=location,media_type=media_type)
+        print(f'{media_type}:{media.media_type}')
 
         general_session.add(media)
         general_session.commit()
@@ -31,6 +32,7 @@ def insert_media(owner_id, owner, url, caption,
         print(f"db_size:{len(general_session.query(Media).all())}", end='\r')
 
     except IntegrityError:
+        print(f'{media.media_type} not added.')
         general_session.rollback()
 #
 def update_db_state(user, state):
@@ -54,12 +56,12 @@ def get_username():
     user = random.choice(user_list)
     return user
 
-for i in range(25):
+for i in range(1):
     #try:
     user = get_username()
     print(user)
     response = loader.context.get_iphone_json(f'api/v1/users/web_profile_info/?username={user}', params={})
-    update_db_state(user, 'in_progress')
+    #update_db_state(user, 'in_progress')
     for edge in response['data']['user']['edge_owner_to_timeline_media']['edges']:
         node = edge['node']
         if node['is_video']:
@@ -76,7 +78,7 @@ for i in range(25):
                          caption=node['edge_media_to_caption'], comment_count=node['edge_media_to_comment'],timestamp=node['taken_at_timestamp'],
                          likes_count=node['edge_liked_by']['count'], location=node['location'],media_type='photo')
 
-    update_db_state(user, 'completed')
+    #update_db_state(user, 'completed')
     # except Exception as e:
     #     print(f'error: {e}')
     #     break

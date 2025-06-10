@@ -14,7 +14,7 @@ class Media(Base):
     owner = Column(String)      # owner['username']
     has_audio = Column(Boolean)    # only for reels
     url = Column(JSON, nullable=False)   # depending on media type
-    views = Column(Integer, nullable=False)    # only for reels
+    views = Column(Integer)    # only for reels
     caption = Column(JSON)          # edge_media_to_caption
     comment_count = Column(JSON)    # edge_media_to_comment
     timestamp = Column(DateTime)
