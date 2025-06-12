@@ -49,6 +49,6 @@ class UpdateDB:
         self.df.apply(lambda row: self.add_to_db(row), axis=1)
 #df = pd.read_csv()
 
-csv_path = '/home/tilaemia/Documents/interior_design_data.csv'
+csv_path = "/home/tilaemia/Documents/shared_space/NLP/leather_users.csv"
 update = UpdateDB('general', csv_path=csv_path)
 

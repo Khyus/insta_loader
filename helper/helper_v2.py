@@ -50,7 +50,7 @@ def get_username():
     user_list = [u[0] for u in general_session.execute(text('''
             SELECT username 
             FROM users
-            WHERE state = 'empty';
+            WHERE state = 'in_progress';
     ''')).fetchall()]
 
     user = random.choice(user_list)
@@ -61,7 +61,7 @@ while True:
         user = get_username()
         print(user)
         response = loader.context.get_iphone_json(f'api/v1/users/web_profile_info/?username={user}', params={})
-        update_db_state(user, 'in_progress')
+        update_db_state(user, 'writing')
         for edge in response['data']['user']['edge_owner_to_timeline_media']['edges']:
             node = edge['node']
             if node['is_video']:
