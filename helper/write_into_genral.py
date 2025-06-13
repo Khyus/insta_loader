@@ -22,10 +22,28 @@ class UpdateDB:
         self.df = pd.read_csv(csv_path)
         #self.run()
 
-    def add_user(self,username: str, user_id: str,bio: str = None, is_private: bool = False,
-                 is_verified: bool = False):
+    def add_user(self,row):
+        params = {
+            'username': None if pd.isna(row['username']) else row['username'],
+            'user_id': None if pd.isna(row['user_id']) else row['user_id'],
+            'state': None if pd.isna(row['state']) else row['state'],
+            'bio': None if pd.isna(row['bio']) else row['bio'],
+            'is_private': None if pd.isna(row['is_private']) else row['is_private'],
+            'is_verified': None if pd.isna(row['is_verified']) else row['is_verified'],
+            'is_professional_account': None if pd.isna(row['is_professional_account']) else row['is_professional_account'],
+            'is_business_account': None if pd.isna(row['is_business_account']) else row['is_business_account'],
+            'business_address': None if pd.isna(row['business_address']) else row['business_address'],
+            'category_name': None if pd.isna(row['category_name']) else row['category_name'],
+            'category_enum': None if pd.isna(row['category_enum']) else row['category_enum'],
+            'media_size': None if pd.isna(row['media_size']) else row['media_size']
+        }
         try:
-            user = User(username=username,user_id = user_id, is_private=is_private, is_verified=is_verified)
+
+            user = User(username=params['username'], user_id=params['user_id'],state=params['state'],bio=params['bio'],
+                        is_private=params['is_private'],is_verified=params['is_verified'],
+                        is_professional_account = params['is_professional_account'], is_business_account=params['is_business_account'],
+                        business_address=params['business_address'],category_name=params['category_name'],category_enum=params['category_enum'],
+                        media_size=params['media_size'])
             self.session.add(user)
             self.session.commit()
 
@@ -42,11 +60,11 @@ class UpdateDB:
         self.session.commit()
 
     def add_to_db(self, row):
-        self.add_user(row['username'], row['user_id'], row['is_private'], row['is_verified'])
+        self.add_user(row)
         print(self.db_size(), end='\r')
 
     def run(self):
-        self.df.apply(lambda row: self.add_to_db(row), axis=1)
+        self.df.iloc[:,3:].apply(lambda row: self.add_to_db(row), axis=1)
 #df = pd.read_csv()
 
 csv_path = "/home/tilaemia/Documents/shared_space/NLP/leather_users.csv"
