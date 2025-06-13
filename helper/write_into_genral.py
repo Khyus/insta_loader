@@ -7,16 +7,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 
-query = text('''
-SELECT user_id, username, bio, is_private, is_verified, is_professional_account, is_business_account, business_address, category_name, category_enum
-FROM users;
-''')
-
 
 session = init_db('general')
-# what do we do
 
-class UpdateDB:
+
+class UpdateUser:
     def __init__(self, db_name, csv_path):
         self.session = init_db(db_name)
         self.df = pd.read_csv(csv_path)
@@ -65,8 +60,53 @@ class UpdateDB:
 
     def run(self):
         self.df.iloc[:,3:].apply(lambda row: self.add_to_db(row), axis=1)
-#df = pd.read_csv()
+class UpdateMedia:
+    def __init__(self, db_name, csv_path):
+        self.session = init_db(db_name)
+        self.df = pd.read_csv(csv_path)
+        #self.run()
 
-csv_path = "/home/tilaemia/Documents/shared_space/NLP/leather_users.csv"
-update = UpdateDB('general', csv_path=csv_path)
+    def add_media(self,row):
+        params = {
+            'owner_id': None if pd.isna(row['owner_id']) else row['owner_id'],
+            'owner': None if pd.isna(row['owner']) else row['owner'],
+            'has_audio': None if pd.isna(row['has_audio']) else row['has_audio'],
+            'url': None if pd.isna(row['url']) else row['url'],
+            'views': None if pd.isna(row['views']) else row['views'],
+            'caption': None if pd.isna(row['caption']) else row['caption'],
+            'comment_count': None if pd.isna(row['comment_count']) else row['comment_count'],
+            'timestamp': None if pd.isna(row['timestamp']) else row['timestamp'],
+            'likes_count': None if pd.isna(row['likes_count']) else row['likes_count'],
+            'location': None if pd.isna(row['location']) else row['location'],
+            'media_type': None if pd.isna(row['media_type']) else row['media_type']
+        }
+        try:
 
+            media = Media(owner_id=params['owner_id'], owner=params['owner'],has_audio=params['has_audio'],url=params['url'],
+                        views=params['views'],caption=params['caption'],comment_count = params['comment_count'],
+                        timestamp=params['timestamp'],likes_count=params['likes_count'],location=params['location'],
+                        media_type=params['media_type'])
+
+            self.session.add(media)
+            self.session.commit()
+
+        except IntegrityError:
+            self.session.rollback()
+
+    def db_size(self):
+        return len(self.session.query(Media).all())
+
+
+    def add_to_db(self, row):
+        self.add_media(row)
+        print(self.db_size(), end='\r')
+
+    def run(self):
+        self.df.iloc[:,2:].apply(lambda row: self.add_to_db(row), axis=1)
+
+
+user_csv_path = "/home/tilaemia/Documents/shared_space/NLP/leather_users.csv"
+media_csv_path = "/home/tilaemia/Documents/shared_space/NLP/csv FILES/leather_media_collection_in_progress.csv"
+
+user = UpdateUser('general', csv_path=user_csv_path)
+media = UpdateMedia('general', csv_path=media_csv_path)
