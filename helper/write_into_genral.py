@@ -23,6 +23,7 @@ class UpdateUser:
             'user_id': None if pd.isna(row['user_id']) else row['user_id'],
             'state': None if pd.isna(row['state']) else row['state'],
             'bio': None if pd.isna(row['bio']) else row['bio'],
+            'bio_links': None if pd.isna(row['bio_links']) else row['bio_links'],
             'is_private': None if pd.isna(row['is_private']) else row['is_private'],
             'is_verified': None if pd.isna(row['is_verified']) else row['is_verified'],
             'is_professional_account': None if pd.isna(row['is_professional_account']) else row['is_professional_account'],
@@ -35,7 +36,7 @@ class UpdateUser:
         try:
 
             user = User(username=params['username'], user_id=params['user_id'],state=params['state'],bio=params['bio'],
-                        is_private=params['is_private'],is_verified=params['is_verified'],
+                        bio_links=params['bio_links'],is_private=params['is_private'],is_verified=params['is_verified'],
                         is_professional_account = params['is_professional_account'], is_business_account=params['is_business_account'],
                         business_address=params['business_address'],category_name=params['category_name'],category_enum=params['category_enum'],
                         media_size=params['media_size'])
@@ -59,7 +60,9 @@ class UpdateUser:
         print(self.db_size(), end='\r')
 
     def run(self):
-        self.df.iloc[:,3:].apply(lambda row: self.add_to_db(row), axis=1)
+        self.df[['user_id', 'username', 'is_private', 'is_verified',
+       'state', 'bio','bio_links','is_professional_account', 'is_business_account',
+       'business_address', 'category_name', 'category_enum', 'media_size']].apply(lambda row: self.add_to_db(row), axis=1)
 class UpdateMedia:
     def __init__(self, db_name, csv_path):
         self.session = init_db(db_name)
@@ -105,8 +108,9 @@ class UpdateMedia:
         self.df.iloc[:,2:].apply(lambda row: self.add_to_db(row), axis=1)
 
 
-user_csv_path = "/home/tilaemia/Documents/shared_space/NLP/leather_users.csv"
-media_csv_path = "/home/tilaemia/Documents/shared_space/NLP/csv FILES/leather_media_collection_in_progress.csv"
+user_csv_path = "/home/tilaemia/Documents/shared_space/NLP/new_leather_users.csv"
+media_csv_path = "/home/tilaemia/Documents/shared_space/NLP/csv FILES/leather_media_file.csv"
+
 
 user = UpdateUser('general', csv_path=user_csv_path)
 media = UpdateMedia('general', csv_path=media_csv_path)

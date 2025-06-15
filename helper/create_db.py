@@ -41,6 +41,7 @@ class User(Base):
     user_id = Column(String, unique=True, nullable=False)
     state = Column(String, default='empty')
     bio = Column(String)
+    bio_links = Column(JSON)
     is_private = Column(Boolean, default=False, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_professional_account = Column(Boolean)
@@ -62,7 +63,9 @@ class User(Base):
         return f"<User(username='{self.username}')>"
 
 def init_db(db_name: str):
-    db_path = f'postgresql://insta:mypassword@localhost/{db_name}'
+    #db_path = "postgresql://postgres.bnnugyuwpgeplrucclfn:mypassword@aws-0-us-west-1.pooler.supabase.com:5432/postgres"
+    #db_path = f'postgresql://insta:mypassword@localhost/{db_name}'
+    db_path = f'postgresql://postgres:mypassword@localhost/{db_name}'
     engine = create_engine(db_path)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
