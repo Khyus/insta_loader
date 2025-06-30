@@ -1,35 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-    .container {{ max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }}
-    h1 {{ color: #0056b3; font-size: 24px; }}
-    p {{ margin-bottom: 1em; }}
-    .footer {{ font-size: 12px; color: #666; text-align: center; margin-top: 20px; }}
-</style>
-</head>
-<body>
-    <div class="container">
-        <h1>Hello, {{name}}! 👋</h1>
-        <p style="font-size: 16px; margin-bottom: 15px;">
-            We wanted to share some exciting news with you in {{city}}! {{dynamic_emoji}}
-        </p>
-        <p>
-            This is a personalized email just for you. We hope you're having a great day.
-            <span style="font-size: 20px; line-height: 1;">🌟</span>
-        </p>
-        <p style="font-size: 14px; color: #555;">
-            P.S. We appreciate your interest.
-        </p>
-        <div class="footer">
-            <p>You received this email because you subscribed to our list.</p>
-            <p><a href="https://yourwebsite.com/unsubscribe">Unsubscribe</a></p>
-        </div>
-    </div>
-</body>
-</html>
+from db import Emails, init_db, change_status
+from RedMail.email_func import *
 
+from sqlalchemy import text
+
+dummy_pdf_path = "/home/tilaemia/Leather Brands.pdf"
+
+if not os.path.exists(dummy_pdf_path):
+    print(f"\n--- WARNING: '{dummy_pdf_path}' not found. Creating a dummy file for testing. ---")
+    try:
+        with open(dummy_pdf_path, 'w') as f:
+            f.write("This is a dummy PDF file for testing attachments.\n")
+        print(f"--- '{dummy_pdf_path}' created. ---")
+    except Exception as e:
+        print(f"--- Could not create dummy PDF: {e}. Please create it manually. ---")
+
+# --- HTML Email Template (example) ---
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
@@ -47,7 +32,7 @@ HTML_TEMPLATE = """
                     <tr>
                         <td style="padding: 20px 30px;">
                             <p style="font-size: 16px; margin: 0 0 20px 0;">
-                                Hey {recipient_name},
+                                Hey {recipient_name}! 👋,
                             </p>
                             <p style="font-size: 16px; margin: 0 0 20px 0;">
                                 Creating content on Instagram shouldn’t feel like guesswork — but for most leather brands, it does.
@@ -59,7 +44,7 @@ HTML_TEMPLATE = """
                                 We recently analyzed hundreds of posts from successful leather businesses on Instagram, and we broke down the patterns behind what actually works.
                             </p>
                             <p style="font-size: 16px; margin: 0 0 20px 0;">
-                                We found 4 content patterns that are working quietly behind the scenes—yet most businesses miss them. 🚀
+                                We found 4 content patterns that are working quietly behind the scenes—yet most businesses miss them.
                             </p>
 
                             <p style="font-size: 16px; margin: 0 0 20px 0;">
@@ -70,17 +55,7 @@ HTML_TEMPLATE = """
                             </p>
                         </td>
                     </tr>
-                    <tr>
-                        <td align="center" style="font-size: 12px; color: #666; text-align: center; padding: 20px 30px; border-top: 1px solid #eee;">
-                            <p style="margin: 0 0 5px 0;">You received this email because you subscribed to our list.</p>
-                            <p style="margin: 0;">
-                                <a href="{unsubscribe_link}" style="color: #0056b3; text-decoration: underline;">Unsubscribe</a>
-                            </p>
-                            <p style="margin: 5px 0 0 0;">
-                                [Your Company Name] | [Your Company Address], [City], [Country]
-                            </p>
-                        </td>
-                    </tr>
+                   
                 </table>
             </td>
         </tr>
@@ -88,3 +63,40 @@ HTML_TEMPLATE = """
 
 </body>
 </html>"""
+
+
+# Example recipient data
+session = init_db('emails')
+recipients_data = session.execute(text('''select * from emails where priority = 'Low' and status = 'unsent';''')).fetchall()[:50]
+
+
+# --- Attachments list ---
+# Provide a list of file paths you want to attach for each email.
+# For a specific email, you might want different attachments.
+# In this example, we'll attach the same dummy PDF to all.
+attachments_for_this_email = [dummy_pdf_path]
+
+for recipient in recipients_data:
+    recipient_email = recipient[3]
+    recipient_name = recipient[2] if recipient[2] else ''
+    # recipient_email = recipient['email']
+    # recipient_name = recipient['name']
+
+
+    subject = f"Still guessing what to post? Here's what actually works for leather brands on IG"
+    personalized_html = HTML_TEMPLATE.format(
+        recipient_name=recipient_name
+    )
+
+    if send_single_email(recipient_email, subject, personalized_html, attachment_paths=attachments_for_this_email):
+        change_status(session, recipient_email, 'sent')
+    else:
+        change_status(session, recipient_email, 'error')
+
+    sent_emails = len(session.query(Emails).filter_by(status='sent').all())
+    total_emails = len(session.query(Emails).all())
+    print(f"{sent_emails}/{total_emails}", end='\r')
+
+    # Optional: Add a delay to avoid hitting SMTP rate limits
+    # import time
+    # time.sleep(5)

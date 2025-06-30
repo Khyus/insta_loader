@@ -27,13 +27,22 @@ def init_db(db_name: str):
 
 def add_email(url, username, email, priority):
     try:
-        new_email = Emails(url=url, username=username, email=email, priority=priority)
+        new_email = Emails(url=url, username=username, email=email, priority=priority, status='unsent')
         session.add(new_email)
         session.commit()
         print(len(session.query(Emails).all()), end='\r')
 
     except IntegrityError:
         session.rollback()
+
+def change_status(session, email, status):
+    try:
+
+        unit = session.query(Emails).filter_by(email=email).first()
+        unit.status = status
+        session.commit()
+    except Exception as e:
+        print(f"error: {e}")
 
 
 class Write_To_DB:
